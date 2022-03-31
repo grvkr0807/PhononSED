@@ -1,0 +1,60 @@
+dimension 3
+newton    on     # always on
+boundary  p p p  # periodic in xyz
+units     real   # kcal/mol, fs, atm
+atom_style full   # coulomb and intra bonds
+read_data  input/data.aRDX   # reading data file
+
+replicate 1 1 1    #optional replication
+
+include    input/RDX_potential_ewaldn   # include potential file from above
+
+# minimize 1.0e-4 1.0e-6 100 1000
+
+velocity	all create 400 432667 dist gaussian  #initialize velocities
+
+timestep	1.0
+
+
+####################### Use the following section of code for getting trajectories using MD ########################
+thermo_style    one   #format of therodynamics data output
+# thermo_style custom step temp press vol pe ke etotal evdwl ecoul epair ebond eangle edihed eimp emol elong etail vol 
+thermo		4   #how often to output thermo data 
+
+#-------  NPT equilibration ----------------------
+fix   1 all npt temp 400.0 400.0 100 iso 0.0 0.0 100
+run   1000000
+#-------- run --------------------------------
+unfix 1
+fix  1 all nve
+run  100000
+
+unfix 1
+fix  1 all nve
+# Use following as test case, if not sure, to avoid writing useful old files
+dump a all custom 4 trajectory/RDX_1ns_N1_T400_velocities.dat id vx vy vz
+dump_modify	a first yes sort 1
+dump b all custom 4 trajectory/RDX_1ns_N1_T400_coords.dat id x y z
+dump_modify	b first yes sort 1
+
+run  1000000
+
+
+# write_restart output/RDX_lammps_1ns_N1.restart
+########################################################################################################################
+
+
+
+# ####################### Use the following section of code for writing energy and temperature files for small amount of time ########
+# thermo_style custom step temp vol etotal 
+# thermo		4   #how often to output thermo data 
+# #-------  NPT equilibration ----------------------
+# unfix 1
+# fix   1 all npt temp 25.0 25.0 100 iso 0.0 0.0 1000
+# run   4
+
+# unfix 1
+# fix  1 all nve 
+# run 4
+
+# ######################################################################################################################################
