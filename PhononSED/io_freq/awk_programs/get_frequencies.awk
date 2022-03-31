@@ -1,0 +1,3 @@
+/Frequencies/ { 
+print
+}
